@@ -23,7 +23,7 @@ namespace Pracial.Test.Invetentarios
         {
 
             #region DADO EL RESTAURANTE TIENE PRODUCTO DE GASEODA DE LITRO CON UN PRECIO DE 5000 Y UN COSTO 2000 Y NO NECESITA PREPARACION
-            var producto = new Producto(nombre: "Gaseosa", costo: 2000, precio: 5000, ventaDirecta: true);
+            var producto = new ProductoSimple(nombre: "Gaseosa", costo: 2000, precio:5000);
             #endregion
             #region CUANDO registre 3 gaseosa
             int cantidad = 3;
@@ -56,7 +56,7 @@ namespace Pracial.Test.Invetentarios
         {
 
             #region DADO EL RESTAURANTE TIENE VENTA DE  PRODUCTOS DE VENTA DIRECTA,COMO SE TIENEN REGISTRADO 3 GASEOSAS 
-            var producto = new Producto(nombre: "Gaseosa", costo: 2000, precio: 5000, ventaDirecta: true);
+            var producto = new ProductoSimple(nombre: "Gaseosa", costo: 2000, precio: 5000);
             int cantidadEntrada = 3;
             var inventario = new Inventario();
             List<Inventario> invetentarios = new List<Inventario>();
@@ -71,6 +71,51 @@ namespace Pracial.Test.Invetentarios
             #region ENTONCES  el sistema registrara la salida del producto en el inventario y disminuira la cantidad del mismo 
             Assert.AreEqual(4000, inventario.Valor);
             Assert.AreEqual("Su Nueva cantidad de Gaseosa es de 2", respuesta);
+            #endregion
+
+        }
+        /*
+         * HU1. SALIDA DE PRODUCTO (3.5)
+        COMO USUARIO QUIERO REGISTRAR LA SALIDA PRODUCTOS
+        CRITERIOS DE ACEPTACIÓN
+        1. La cantidad de la salida de debe ser mayor a 0
+        3. En caso de un producto compuesto la cantidad de la salida se le disminuirá a la cantidad
+        existente de cada uno de su ingrediente
+        4. Cada salida debe registrar el costo del producto y el precio de la venta
+        5. El costo de los productos compuestos corresponden al costo de sus ingredientes por la
+        cantidad de estos
+         */
+        [Test]
+        public void PuedoRegistrarProductosdeSalidadCompuesta()
+        {
+            /*
+                         * un perro sencillo (ingredientes: un pan para perros, una salchicha, una lámina de queso)
+            precio: 5.000. costo: calculado: 3.000, utilidad: precio - costo
+             */
+
+            #region DADO EL RESTAURANTE TIENE VENTA DE  PRODUCTOS DE VENTA INDIRECTA Que nesecitan transfotmacion
+            var panPerro = new Producto(nombre: "Salchica", costo: 1000, ventaDirecta:false);
+            var salchicha = new Producto(nombre: "PanPerro", costo: 1000, ventaDirecta:false);
+            var laminadequeso = new Producto(nombre: "LaminaQueso", costo: 1000, ventaDirecta:false);
+            int cantidadEntrada = 3;
+            var inventario = new Inventario();
+            List<Inventario> invetentarios = new List<Inventario>();
+            invetentarios.Add(inventario);
+            inventario.EntradaProductos(producto: laminadequeso, cantidad: cantidadEntrada, inventario: invetentarios);
+            inventario.EntradaProductos(producto: panPerro, cantidad: cantidadEntrada, inventario: invetentarios);
+            inventario.EntradaProductos(producto: salchicha, cantidad: cantidadEntrada, inventario: invetentarios);
+
+            #endregion
+            #region CUANDO se solicited la venta de un perro Sencillo
+            var huespede = 1055;
+            List<Producto> productoCompuesto = new List<Producto>();
+            invetentarios.Add(inventario);
+            int cantidadSalida = 1;
+           //string respuesta = inventario.SalidadeProductosCompuesto(productos: productoCompuesto, cantidad: cantidadSalida, inventario: invetentarios, huespede: huespede);
+            #endregion
+            #region ENTONCES  el sistema registrara la salida del producto en el inventario y disminuira la cantidad del mismo 
+            Assert.AreEqual(4000, inventario.Valor);
+            //Assert.AreEqual("Su Nueva cantidad de Gaseosa es de 2", respuesta);
             #endregion
 
         }
@@ -131,7 +176,7 @@ namespace Pracial.Test.Invetentarios
 
         }
 
-        internal string SalidadeProductosSimple(Producto producto, int cantidad, List<Inventario> inventario, int huespede)
+        internal string SalidadeProductosSimple(ProductoSimple producto, int cantidad, List<Inventario> inventario, int huespede)
         {
             if (cantidad >= 0)
             {
@@ -139,7 +184,7 @@ namespace Pracial.Test.Invetentarios
                 {
                     Cantidad -= cantidad;
                     Valor = Producto.Costo*Cantidad;
-                    _ventaHuespede.Add(new VentaHuespede(inventario:this, huespede: huespede, venta:Producto.Precio*Cantidad));
+                    _ventaHuespede.Add(new VentaHuespede(inventario:this, huespede: huespede, venta:producto.Precio*Cantidad));
                     return $"Su Nueva cantidad de {Producto.Nombre} es de {Cantidad}";
                 }
                
@@ -153,17 +198,40 @@ namespace Pracial.Test.Invetentarios
     {
         public string Nombre { get; private set; }
         public decimal Costo { get; private set; }
-        public decimal Precio { get; private set; }
-        public decimal Utilidad { get => Precio - Costo; }
-
         public bool VentaDirecta { get; private set; }
+        protected List<VentaHuespede> _ventaHuespede;
 
-        public Producto(string nombre, decimal costo, decimal precio, bool ventaDirecta)
+        public Producto(string nombre, decimal costo, bool ventaDirecta)
         {
             Nombre = nombre;
             Costo = costo;
-            Precio = precio;
             VentaDirecta = ventaDirecta;
+        }
+        
+    }
+    internal class ProductoSimple:Producto
+    {
+        
+        public decimal Precio { get; private set; }
+        public decimal Utilidad { get => Precio - Costo; }
+
+
+        public ProductoSimple(string nombre, decimal costo, decimal precio):base(nombre,costo,true)
+        {
+            
+            Precio = precio;
+        }
+
+    }
+    internal class ProductoCompuesto:Producto
+    {
+        public decimal Utilidad { get; private set; }
+        public decimal Precio { get; private set; }
+        public List<Producto> Productos { get; private set; }
+        public ProductoCompuesto(string nombre, decimal costo, decimal precio, List<Producto> productos) :base(nombre,costo,false)
+        {
+            Productos = productos;
+            Precio = precio;
         }
     }
 }
