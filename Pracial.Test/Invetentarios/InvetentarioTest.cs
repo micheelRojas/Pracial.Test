@@ -27,8 +27,8 @@ namespace Pracial.Test.Invetentarios
             #endregion
             #region CUANDO registre 3 gaseosa
             int cantidad = 3;
-            var inventario = new Invetentario();
-            List<Invetentario> invetentarios= new List<Invetentario>();
+            var inventario = new Inventario();
+            List<Inventario> invetentarios= new List<Inventario>();
             invetentarios.Add(inventario);
             string respuesta = inventario.EntradaProductos(producto: producto, cantidad:cantidad, inventario: invetentarios);
             #endregion
@@ -58,14 +58,15 @@ namespace Pracial.Test.Invetentarios
             #region DADO EL RESTAURANTE TIENE VENTA DE  PRODUCTOS DE VENTA DIRECTA,COMO SE TIENEN REGISTRADO 3 GASEOSAS 
             var producto = new Producto(nombre: "Gaseosa", costo: 2000, precio: 5000, ventaDirecta: true);
             int cantidadEntrada = 3;
-            var inventario = new Invetentario();
-            List<Invetentario> invetentarios = new List<Invetentario>();
+            var inventario = new Inventario();
+            List<Inventario> invetentarios = new List<Inventario>();
             invetentarios.Add(inventario);
             inventario.EntradaProductos(producto: producto, cantidad: cantidadEntrada, inventario: invetentarios);
             #endregion
-            #region CUANDO se solicited la venta de una gaseosa
+            #region CUANDO se solicited la venta de una gaseosa por parte de un huespede
+            var huespede = 1055;
             int cantidadSalida = 1;
-            string respuesta = inventario.SalidadeProductosSimple(producto: producto, cantidad: cantidadSalida, inventario: invetentarios);
+            string respuesta = inventario.SalidadeProductosSimple(producto: producto, cantidad: cantidadSalida, inventario: invetentarios, huespede: huespede);
             #endregion
             #region ENTONCES  el sistema registrara la salida del producto en el inventario y disminuira la cantidad del mismo 
             Assert.AreEqual(4000, inventario.Valor);
@@ -75,16 +76,35 @@ namespace Pracial.Test.Invetentarios
         }
     }
 
-    internal class Invetentario
+    internal class VentaHuespede
+    {
+        public int Huespede { get; private set; }
+        public decimal Venta { get; private set; }
+        public Inventario Inventario { get; private set; }
+
+        public VentaHuespede(Inventario inventario,int huespede, decimal venta )
+        {
+            Inventario = inventario;
+            Huespede = huespede;
+            Venta = venta;
+        }
+    }
+
+    internal class Inventario
     {
         public decimal Valor { get; private set; }
         public int Cantidad { get; private set; }
         public Producto Producto { get; private set; }
-        public Invetentario()
-        {
-        }
+        protected List<VentaHuespede> _ventaHuespede;
 
-        internal string EntradaProductos(Producto producto, int cantidad, List<Invetentario> inventario)
+        public Inventario()
+        {
+            _ventaHuespede = new List<VentaHuespede>();
+
+        }
+        public IReadOnlyCollection<VentaHuespede> VentaHuespedes => _ventaHuespede.AsReadOnly();
+
+        internal string EntradaProductos(Producto producto, int cantidad, List<Inventario> inventario)
         {
            
             if (cantidad >= 0) {
@@ -102,7 +122,7 @@ namespace Pracial.Test.Invetentarios
             throw new NotImplementedException();
         }
 
-        internal bool ExisteProducto(List<Invetentario> inventario, Producto producto) {
+        internal bool ExisteProducto(List<Inventario> inventario, Producto producto) {
             if (inventario.FirstOrDefault(t => t.Producto == producto) != null) {
                 return true;
             }
@@ -111,7 +131,7 @@ namespace Pracial.Test.Invetentarios
 
         }
 
-        internal string SalidadeProductosSimple(Producto producto, int cantidad, List<Invetentario> inventario)
+        internal string SalidadeProductosSimple(Producto producto, int cantidad, List<Inventario> inventario, int huespede)
         {
             if (cantidad >= 0)
             {
@@ -119,6 +139,7 @@ namespace Pracial.Test.Invetentarios
                 {
                     Cantidad -= cantidad;
                     Valor = Producto.Costo*Cantidad;
+                    _ventaHuespede.Add(new VentaHuespede(inventario:this, huespede: huespede, venta:Producto.Precio*Cantidad));
                     return $"Su Nueva cantidad de {Producto.Nombre} es de {Cantidad}";
                 }
                
