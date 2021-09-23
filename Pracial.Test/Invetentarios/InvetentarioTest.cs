@@ -2,12 +2,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Pracial.Test.Invetentarios
 {
-   class InvetentarioTest
+    class InvetentarioTest
     {
 
 
@@ -23,14 +21,14 @@ namespace Pracial.Test.Invetentarios
         {
 
             #region DADO EL RESTAURANTE TIENE PRODUCTO DE GASEODA DE LITRO CON UN PRECIO DE 5000 Y UN COSTO 2000 Y NO NECESITA PREPARACION
-            var producto = new ProductoSimple(nombre: "Gaseosa", costo: 2000, precio:5000);
+            var producto = new ProductoSimple(nombre: "Gaseosa", costo: 2000, precio: 5000);
             #endregion
             #region CUANDO registre 3 gaseosa
             int cantidad = 3;
             var inventario = new Inventario();
-            List<Inventario> invetentarios= new List<Inventario>();
+            List<Inventario> invetentarios = new List<Inventario>();
             invetentarios.Add(inventario);
-            string respuesta = inventario.EntradaProductos(producto: producto, cantidad:cantidad, inventario: invetentarios);
+            string respuesta = inventario.EntradaProductos(producto: producto, cantidad: cantidad, inventario: invetentarios);
             #endregion
             #region ENTONCES  el sistema registrara el producto en el inventario y adicionara la cantidad del mismo 
             Assert.AreEqual(6000, inventario.Valor);
@@ -93,10 +91,10 @@ namespace Pracial.Test.Invetentarios
             precio: 5.000. costo: calculado: 3.000, utilidad: precio - costo
              */
 
-            #region DADO EL RESTAURANTE TIENE VENTA DE  PRODUCTOS DE VENTA INDIRECTA Que nesecitan transfotmacion
-            var panPerro = new Producto(nombre: "Salchica", costo: 1000, ventaDirecta:false);
-            var salchicha = new Producto(nombre: "PanPerro", costo: 1000, ventaDirecta:false);
-            var laminadequeso = new Producto(nombre: "LaminaQueso", costo: 1000, ventaDirecta:false);
+            #region DADO EL RESTAURANTE TIENE VENTA DE  PRODUCTOS DE VENTA INDIRECTA Que nesecitan transfotmacion 
+            var panPerro = new Producto(nombre: "Salchica", costo: 1000, ventaDirecta: false);
+            var salchicha = new Producto(nombre: "PanPerro", costo: 1000, ventaDirecta: false);
+            var laminadequeso = new Producto(nombre: "LaminaQueso", costo: 1000, ventaDirecta: false);
             int cantidadEntrada = 3;
             var inventario = new Inventario();
             List<Inventario> invetentarios = new List<Inventario>();
@@ -104,18 +102,21 @@ namespace Pracial.Test.Invetentarios
             inventario.EntradaProductos(producto: laminadequeso, cantidad: cantidadEntrada, inventario: invetentarios);
             inventario.EntradaProductos(producto: panPerro, cantidad: cantidadEntrada, inventario: invetentarios);
             inventario.EntradaProductos(producto: salchicha, cantidad: cantidadEntrada, inventario: invetentarios);
-
+            invetentarios.Add(inventario);
+            List<Producto> productos = new List<Producto>();
+            productos.Add(panPerro);
+            productos.Add(salchicha);
+            productos.Add(laminadequeso);
             #endregion
             #region CUANDO se solicited la venta de un perro Sencillo
             var huespede = 1055;
-            List<Producto> productoCompuesto = new List<Producto>();
-            invetentarios.Add(inventario);
+            var perroSencillo = new ProductoCompuesto(nombre: "PerroSencillo", precio: 5000, productos);
             int cantidadSalida = 1;
-           //string respuesta = inventario.SalidadeProductosCompuesto(productos: productoCompuesto, cantidad: cantidadSalida, inventario: invetentarios, huespede: huespede);
+            string respuesta = inventario.SalidadeProductosCompuesto(producto: perroSencillo, cantidad: cantidadSalida, inventario: invetentarios, huespede: huespede);
             #endregion
-            #region ENTONCES  el sistema registrara la salida del producto en el inventario y disminuira la cantidad del mismo 
-            Assert.AreEqual(4000, inventario.Valor);
-            //Assert.AreEqual("Su Nueva cantidad de Gaseosa es de 2", respuesta);
+            #region ENTONCES la cantidad de la salida se le disminuirá a la cantidad existente de cada uno de su ingrediente 
+            Assert.AreEqual(3000, inventario.Valor);
+            Assert.AreEqual("Su Nueva cantidad de Salchica es de 2, PanPerro es 2, LaminaQueso es 2", respuesta);
             #endregion
 
         }
@@ -127,7 +128,7 @@ namespace Pracial.Test.Invetentarios
         public decimal Venta { get; private set; }
         public Inventario Inventario { get; private set; }
 
-        public VentaHuespede(Inventario inventario,int huespede, decimal venta )
+        public VentaHuespede(Inventario inventario, int huespede, decimal venta)
         {
             Inventario = inventario;
             Huespede = huespede;
@@ -151,12 +152,14 @@ namespace Pracial.Test.Invetentarios
 
         internal string EntradaProductos(Producto producto, int cantidad, List<Inventario> inventario)
         {
-           
-            if (cantidad >= 0) {
-                if (ExisteProducto(inventario, producto))
-                {  
+
+            if (cantidad >= 0)
+            {
+                if (ExisteProducto(inventario, producto)!=null)
+                {
                 }
-                else {
+                else
+                {
                     Producto = producto;
                 }
                 Cantidad += cantidad;
@@ -167,11 +170,13 @@ namespace Pracial.Test.Invetentarios
             throw new NotImplementedException();
         }
 
-        internal bool ExisteProducto(List<Inventario> inventario, Producto producto) {
-            if (inventario.FirstOrDefault(t => t.Producto == producto) != null) {
-                return true;
+        internal Producto ExisteProducto(List<Inventario> inventario, Producto producto)
+        {
+            if (inventario.FirstOrDefault(t => t.Producto == producto) != null)
+            {
+                return Producto;
             }
-            return false;
+            return null;
 
 
         }
@@ -180,15 +185,54 @@ namespace Pracial.Test.Invetentarios
         {
             if (cantidad >= 0)
             {
-                if (ExisteProducto(inventario, producto))
+                if (ExisteProducto(inventario, producto)!=null)
                 {
                     Cantidad -= cantidad;
-                    Valor = Producto.Costo*Cantidad;
-                    _ventaHuespede.Add(new VentaHuespede(inventario:this, huespede: huespede, venta:producto.Precio*Cantidad));
+                    Valor = Producto.Costo * Cantidad;
+                    _ventaHuespede.Add(new VentaHuespede(inventario: this, huespede: huespede, venta: producto.Precio * Cantidad));
                     return $"Su Nueva cantidad de {Producto.Nombre} es de {Cantidad}";
                 }
-               
-                
+
+
+            }
+            throw new NotImplementedException();
+        }
+
+        internal string SalidadeProductosCompuesto(ProductoCompuesto producto, int cantidad, List<Inventario> inventario, int huespede)
+        {
+            if (cantidad >= 0)
+            {
+                if (ExisteProducto(inventario, producto)!=null)
+                {
+
+                    for (int i = 0; i < producto.Productos.LongCount(); i++)
+                    {
+                        var productoTemporal = inventario.Where(x => x.Producto.Equals(Producto.Equals(producto.Productos[i]))).ToList();
+                        SalidadeProductos(productoTemporal[i].Producto, productoTemporal[i].Cantidad,inventario);
+                    }
+                    Cantidad -= cantidad;
+                    Valor = Producto.Costo * Cantidad;
+                    _ventaHuespede.Add(new VentaHuespede(inventario: this, huespede: huespede, venta: producto.Precio * Cantidad));
+                    return $"Su Nueva cantidad de {Producto.Nombre} es de {Cantidad}";
+                }
+
+
+            }
+            throw new NotImplementedException();
+        }
+        internal string SalidadeProductos(Producto producto, int cantidad, List<Inventario> inventario)
+        {
+            if (cantidad >= 0)
+            {
+                if (ExisteProducto(inventario, producto) != null)
+                {
+                    Cantidad -= cantidad;
+                    Valor = Producto.Costo * Cantidad;
+                   // _ventaHuespede.Add(new VentaHuespede(inventario: this, huespede: huespede, venta: 0));
+                    return $"Su Nueva cantidad de {Producto.Nombre} es de {Cantidad}";
+                }
+
+
             }
             throw new NotImplementedException();
         }
@@ -207,31 +251,43 @@ namespace Pracial.Test.Invetentarios
             Costo = costo;
             VentaDirecta = ventaDirecta;
         }
-        
+
     }
-    internal class ProductoSimple:Producto
+    internal class ProductoSimple : Producto
     {
-        
+
         public decimal Precio { get; private set; }
         public decimal Utilidad { get => Precio - Costo; }
 
 
-        public ProductoSimple(string nombre, decimal costo, decimal precio):base(nombre,costo,true)
+        public ProductoSimple(string nombre, decimal costo, decimal precio) : base(nombre, costo, true)
         {
-            
+
             Precio = precio;
         }
 
     }
-    internal class ProductoCompuesto:Producto
+    internal class ProductoCompuesto : Producto
     {
         public decimal Utilidad { get; private set; }
         public decimal Precio { get; private set; }
         public List<Producto> Productos { get; private set; }
-        public ProductoCompuesto(string nombre, decimal costo, decimal precio, List<Producto> productos) :base(nombre,costo,false)
+        public ProductoCompuesto(string nombre, decimal precio, List<Producto> productos) : base(nombre, calcularCostos(productos), false)
         {
             Productos = productos;
             Precio = precio;
         }
+        private static decimal calcularCostos(List<Producto> productos)
+        {
+            decimal sumaCostos = 0;
+            for (int i = 0; i < productos.LongCount(); i++)
+            {
+                sumaCostos = sumaCostos + productos[i].Costo;
+            }
+            return sumaCostos;
+
+
+        }
+
     }
 }
