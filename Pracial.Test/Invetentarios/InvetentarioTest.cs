@@ -57,14 +57,15 @@ namespace Pracial.Test.Invetentarios
 
             #region DADO EL RESTAURANTE TIENE VENTA DE  PRODUCTOS DE VENTA DIRECTA,COMO SE TIENEN REGISTRADO 3 GASEOSAS 
             var producto = new Producto(nombre: "Gaseosa", costo: 2000, precio: 5000, ventaDirecta: true);
-            int cantidad = 3;
+            int cantidadEntrada = 3;
             var inventario = new Invetentario();
             List<Invetentario> invetentarios = new List<Invetentario>();
             invetentarios.Add(inventario);
-            inventario.EntradaProductos(producto: producto, cantidad: cantidad, inventario: invetentarios);
+            inventario.EntradaProductos(producto: producto, cantidad: cantidadEntrada, inventario: invetentarios);
             #endregion
             #region CUANDO se solicited la venta de una gaseosa
-            string respuesta = inventario.SalidadeProductosSimple(producto: producto, cantidad: cantidad, inventario: invetentarios);
+            int cantidadSalida = 1;
+            string respuesta = inventario.SalidadeProductosSimple(producto: producto, cantidad: cantidadSalida, inventario: invetentarios);
             #endregion
             #region ENTONCES  el sistema registrara la salida del producto en el inventario y disminuira la cantidad del mismo 
             Assert.AreEqual(4000, inventario.Valor);
@@ -112,6 +113,17 @@ namespace Pracial.Test.Invetentarios
 
         internal string SalidadeProductosSimple(Producto producto, int cantidad, List<Invetentario> inventario)
         {
+            if (cantidad >= 0)
+            {
+                if (ExisteProducto(inventario, producto))
+                {
+                    Cantidad -= cantidad;
+                    Valor = Producto.Costo*Cantidad;
+                    return $"Su Nueva cantidad de {Producto.Nombre} es de {Cantidad}";
+                }
+               
+                
+            }
             throw new NotImplementedException();
         }
     }
@@ -119,11 +131,13 @@ namespace Pracial.Test.Invetentarios
     internal class Producto
     {
         public string Nombre { get; private set; }
-        public int Costo { get; private set; }
-        public int Precio { get; private set; }
+        public decimal Costo { get; private set; }
+        public decimal Precio { get; private set; }
+        public decimal Utilidad { get => Precio - Costo; }
+
         public bool VentaDirecta { get; private set; }
 
-        public Producto(string nombre, int costo, int precio, bool ventaDirecta)
+        public Producto(string nombre, decimal costo, decimal precio, bool ventaDirecta)
         {
             Nombre = nombre;
             Costo = costo;
