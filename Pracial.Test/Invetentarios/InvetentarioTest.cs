@@ -23,7 +23,7 @@ namespace Pracial.Test.Invetentarios
         {
 
             #region DADO EL RESTAURANTE TIENE PRODUCTO DE GASEODA DE LITRO CON UN PRECIO DE 5000 Y UN COSTO 2000 Y NO NECESITA PREPARACION
-            var producto = new Producto(nombre: "Gaseosa", costo: 2000, precio: 5000, ventaDirecta: false);
+            var producto = new Producto(nombre: "Gaseosa", costo: 2000, precio: 5000, ventaDirecta: true);
             #endregion
             #region CUANDO registre 3 gaseosa
             int cantidad = 3;
@@ -35,6 +35,40 @@ namespace Pracial.Test.Invetentarios
             #region ENTONCES  el sistema registrara el producto en el inventario y adicionara la cantidad del mismo 
             Assert.AreEqual(6000, inventario.Valor);
             Assert.AreEqual("Su Nueva cantidad de Gaseosa es de 3", respuesta);
+            #endregion
+
+        }
+        /*
+         * HU1. SALIDA DE PRODUCTO (3.5)
+        COMO USUARIO QUIERO REGISTRAR LA SALIDA PRODUCTOS
+        CRITERIOS DE ACEPTACIÓN
+        1. La cantidad de la salida de debe ser mayor a 0
+        2. En caso de un producto sencillo la cantidad de la salida se le disminuirá a la cantidad
+        existente del producto.
+        3. En caso de un producto compuesto la cantidad de la salida se le disminuirá a la cantidad
+        existente de cada uno de su ingrediente
+        4. Cada salida debe registrar el costo del producto y el precio de la venta
+        5. El costo de los productos compuestos corresponden al costo de sus ingredientes por la
+        cantidad de estos
+         */
+        [Test]
+        public void PuedoRegistrarProductosdeSalidadSimple()
+        {
+
+            #region DADO EL RESTAURANTE TIENE VENTA DE  PRODUCTOS DE VENTA DIRECTA,COMO SE TIENEN REGISTRADO 3 GASEOSAS 
+            var producto = new Producto(nombre: "Gaseosa", costo: 2000, precio: 5000, ventaDirecta: true);
+            int cantidad = 3;
+            var inventario = new Invetentario();
+            List<Invetentario> invetentarios = new List<Invetentario>();
+            invetentarios.Add(inventario);
+            inventario.EntradaProductos(producto: producto, cantidad: cantidad, inventario: invetentarios);
+            #endregion
+            #region CUANDO se solicited la venta de una gaseosa
+            string respuesta = inventario.SalidadeProductosSimple(producto: producto, cantidad: cantidad, inventario: invetentarios);
+            #endregion
+            #region ENTONCES  el sistema registrara la salida del producto en el inventario y disminuira la cantidad del mismo 
+            Assert.AreEqual(4000, inventario.Valor);
+            Assert.AreEqual("Su Nueva cantidad de Gaseosa es de 2", respuesta);
             #endregion
 
         }
@@ -75,7 +109,11 @@ namespace Pracial.Test.Invetentarios
 
 
         }
-       
+
+        internal string SalidadeProductosSimple(Producto producto, int cantidad, List<Invetentario> inventario)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     internal class Producto
